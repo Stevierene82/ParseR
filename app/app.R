@@ -31,12 +31,10 @@ ui <- fluidPage(
                     accept = c("text/csv",
                                "text/comma-separated-values,text/plain",
                                ".csv")),
-          #verbatimTextOutput("text"),
-          # Horizontal line ----
+          #verbatimTextOutput("text")
           tags$hr()
       ),
          
-      # Show a plot of the generated distribution
       mainPanel(
           h3('Data Display'),
           verbatimTextOutput("text")
@@ -52,6 +50,12 @@ server <- function(input, output) {
         df <- paste(readLines(filePath), collapse="\n")
         df
     })
+    
+    details <- function(df){
+        # WIP - check parsing_function.R
+    }
+    
+    
     output$text <- renderText({ # rendered so can be highlighted
         readthedata()
     })

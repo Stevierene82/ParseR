@@ -8,7 +8,7 @@ THIS IS THE END
 
 Next file
 
-interest: reading
+interest:     reading
 color: blue
 
 4/2/03
@@ -20,6 +20,6 @@ and another file
 color: red
 interest: puzzles
 
-6/3/02
+6/3/2002
 
 THIS IS THE END
