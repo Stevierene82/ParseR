@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(stringr)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -32,12 +33,16 @@ ui <- fluidPage(
                                "text/comma-separated-values,text/plain",
                                ".csv")),
           #verbatimTextOutput("text")
-          tags$hr()
+          tags$hr(),
+          downloadButton("downloadData", "Download")
       ),
          
       mainPanel(
           h3('Data Display'),
-          verbatimTextOutput("text")
+          verbatimTextOutput("test"),
+          
+          tableOutput("table")
+          
       )
    )
 )
@@ -47,19 +52,49 @@ server <- function(input, output) {
     readthedata <- reactive({
         req(input$file1)
         filePath <- input$file1$datapath
-        df <- paste(readLines(filePath), collapse="\n")
+        #df <- paste(readLines(filePath), collapse="\n")
+        #df
+        a <- readr::read_file(filePath)
+        a <- unlist(str_split(a, 'THIS IS THE END'))
+        b <- grep('^\\r\\n$',a) # find lines with no content
+        a <- a[-b] # get rid of those lines
+        
+        df <- data.frame('raw'=a)
+        df$raw <- as.character(df$raw)
         df
     })
     
-    details <- function(df){
-        # WIP - check parsing_function.R
+    parse_info <- function(){
+        df <- readthedata()
+        df$interest <- str_extract_all(df$raw,'interest.*\r\n')
+        df$interest <- gsub('interest: *|\r\n','',df$interest) # get the interest
+        df$color <- str_extract_all(df$raw,'color.*\r\n')      
+        df$color <- gsub('color: *|\r\n','',df$color) # get the color
+        df$date <- str_extract_all(df$raw,'\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}') # get date
+        df$date <- as.Date(as.character(df$date)) # fix this format
+        df <- as.data.frame(df)
+        df
     }
     
-    
-    output$text <- renderText({ # rendered so can be highlighted
-        readthedata()
+    output$test <- renderPrint({
+        
+        sapply(parse_info(),class)
     })
-   
+
+    output$table <- renderTable({ # rendered so can be highlighted
+        parse_info()
+    })
+    
+    asdf <- data.frame('a'=1:3,'b'=4:6)
+    
+    output$downloadData <- downloadHandler(
+        filename = function() {
+            paste(input$downloadData, ".txt", sep = "")
+        },
+        content = function(file) {
+            write.csv(parse_info(), file, row.names = FALSE)
+        }
+    )
     
    
 
